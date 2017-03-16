@@ -1,0 +1,27 @@
+FROM ubuntu:16.04
+
+RUN apt-get update
+RUN apt-get install -y \
+apt-transport-https ca-certificates
+
+RUN apt-key adv \
+--keyserver hkp://p80.pool.sks-keyservers.net:80 \
+--recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
+RUN echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" \
+| tee /etc/apt/sources.list.d/docker.list
+
+# Update package index using new source
+RUN apt-get update
+
+# Install the docker engine
+RUN apt-get install docker-engine -y
+
+# Start the docker engine immediately in bg
+RUN nohup docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock &
+
+# Install the cron service
+# and use it to tie up the fg proc
+RUN apt-get install cron -y
+
+CMD ["/usr/sbin/cron", "-f"]
